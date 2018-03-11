@@ -18,15 +18,15 @@ namespace Icarus
         {
             mSynapse = synapse;
             mChannel = mSynapse.CreateChannel(0, "RpcClient");
-            mQueueName = "client_" + mSynapse.AppName + "_" + mSynapse.AppId;
-            mRouter = "client." + mSynapse.AppName + "." + mSynapse.AppId;
+            mQueueName = string.Format("{0}_client_{1}_{2}", mSynapse.SysName, mSynapse.AppName, mSynapse.AppId);
+            mRouter = string.Format("client.{0}.{1}", mSynapse.AppName, mSynapse.AppId);
             mResponseCache = new Dictionary<string, byte[]>();
         }
 
         private void mCheckAndCreateQueue()
         {
-            mChannel.QueueDeclare(mQueueName, false, false, true, null);
-            mChannel.QueueBind(mQueueName, Synapse.RpcExchangeName, mRouter, null);
+            mChannel.QueueDeclare(mQueueName, true, false, true, null);
+            mChannel.QueueBind(mQueueName, mSynapse.SysName, mRouter, null);
         }
 
         public void Run()
@@ -48,14 +48,14 @@ namespace Icarus
         public object Send(string app, string action, Dictionary<string, object> param)
         {
             var paramJson = JsonConvert.SerializeObject(param);
-            var router = "server." + app;
+            var router = string.Format("server.{0}", app);
             dynamic response;
             var props = mChannel.CreateBasicProperties();
             props.AppId = mSynapse.AppId;
             props.MessageId = Synapse.RandomString();
             props.Type = action;
             props.ReplyTo = mSynapse.AppName;
-            mChannel.BasicPublish(Synapse.RpcExchangeName, router, props, Encoding.UTF8.GetBytes(paramJson));
+            mChannel.BasicPublish(mSynapse.SysName, router, props, Encoding.UTF8.GetBytes(paramJson));
             if (mSynapse.Debug)
             {
                 Synapse.Log(string.Format("RPC Request: ({0}){4}->{1}@{2} {3}", props.MessageId, action, app, paramJson, mSynapse.AppName), Synapse.LogDebug);

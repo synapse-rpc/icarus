@@ -18,16 +18,16 @@ namespace Icarus
         {
             mSynapse = synapse;
             mChannel = mSynapse.CreateChannel(mSynapse.RpcProcessNum, "RpcServer");
-            mQueueName = "server_" + mSynapse.AppName;
-            mRouter = "server." + mSynapse.AppName;
+            mQueueName = string.Format("{0}_server_{1}", mSynapse.SysName, mSynapse.AppName);
+            mRouter = string.Format("server.{0}", mSynapse.AppName);
             mAlias = mSynapse.RpcCallback.RegAlias();
         }
 
         private void mCheckAndCreateQueue()
         {
-            mChannel.QueueDeclare(mQueueName, false, false, true, null);
+            mChannel.QueueDeclare(mQueueName, true, false, true, null);
             var eventKeys = mAlias.Keys;
-            mChannel.QueueBind(mQueueName, Synapse.RpcExchangeName, mRouter, null);
+            mChannel.QueueBind(mQueueName, mSynapse.SysName, mRouter, null);
         }
 
         public void Run()
@@ -59,7 +59,7 @@ namespace Icarus
                         props.ReplyTo = mSynapse.AppName;
                         props.Type = ea.BasicProperties.Type;
                         var returnJson = JsonConvert.SerializeObject(res);
-                        mChannel.BasicPublish(Synapse.RpcExchangeName, reply, false, props, Encoding.UTF8.GetBytes(returnJson));
+                        mChannel.BasicPublish(mSynapse.SysName, reply, false, props, Encoding.UTF8.GetBytes(returnJson));
                         Synapse.Log(string.Format("Rpc Return: ({0}){1}@{2}->{3} {4}", ea.BasicProperties.MessageId, ea.BasicProperties.Type, mSynapse.AppName, ea.BasicProperties.ReplyTo, returnJson), Synapse.LogDebug);
                     }
                 }

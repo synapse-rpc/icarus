@@ -7,7 +7,6 @@
 
 #### 使用前奏:
 1. 需要一个RabbitMQ服务器
-2. 在RabbitMQ中创建一个vHost
 
 #### 使用方式:
 ```C#
@@ -51,6 +50,12 @@ public Dictionary<string, object> tb(dynamic data)
     ret.Add("number", 5233);
     return ret;
 }
+
+//日志处理方法
+public void tb(BasicDeliverEventArgs data)
+{
+    Console.WriteLine("我已经收到信息: {0}", data.RoutingKey);
+}
 ```
 #### 客户端方法说明:
 1. 发送事件
@@ -68,10 +73,11 @@ public Dictionary<string, object> tb(dynamic data)
 
 ```C#
 public string MqHost;               //MQ主机
-public string MqPort;               //MQ端口
+public string MqPort = "5672";      //MQ端口
 public string MqUser;               //MQ用户
 public string MqPass;               //MQ密码
-public string SysName;              //MQ vHost
+public string MqVHost = "/";        //MQ虚拟机名称,默认为/
+public string SysName;              //系统名称(都处于同一个系统下才能通讯)
 public string AppName;              //应用名(当前应用的名字,不能于其他应用重复)
 public string AppId;                //应用ID(支持分布式,不输入会每次启动自动随机生成)
 public int RpcTimeout = 3;          //RPC请求超时时间(只针对客户端有效)
@@ -80,6 +86,7 @@ public int RpcProcessNum = 20;      //RPC服务并发量
 public bool DisableEventClient;     //禁用事件客户端
 public bool DisableRpcClient;       //禁用RPC客户端
 public bool Debug;                  //调试
-public dynamic RpcCallback;         //RPC处理类
-public dynamic EventCallback;       //Event处理类
+public dynamic RpcCallback;         //RPC处理类(不指定默认禁用)
+public dynamic EventCallback;       //Event处理类(不指定默认禁用)
+public dynamic LoggerCallback;      //日志处理类(不指定默认禁用)
 ```

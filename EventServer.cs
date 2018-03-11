@@ -18,17 +18,17 @@ namespace Icarus
         {
             mSynapse = synapse;
             mChannel = mSynapse.CreateChannel(mSynapse.EventProcessNum, "EventServer");
-            mQueueName = "event_" + mSynapse.AppName;
+            mQueueName = string.Format("{0}_event_{1}", mSynapse.SysName, mSynapse.AppName);
             mAlias = mSynapse.EventCallback.RegAlias();
         }
 
         private void mCheckAndCreateQueue()
         {
-            mChannel.QueueDeclare(mQueueName, false, false, true, null);
+            mChannel.QueueDeclare(mQueueName, true, false, true, null);
             var eventKeys = mAlias.Keys;
             foreach (string item in eventKeys)
             {
-                mChannel.QueueBind(mQueueName, Synapse.EventExchangeName, item, null);
+                mChannel.QueueBind(mQueueName, mSynapse.SysName, string.Format("event.{0}", item), null);
             }
         }
 
@@ -40,7 +40,7 @@ namespace Icarus
             {
                 if (mSynapse.Debug)
                 {
-                    Synapse.Log(string.Format("Event Receive: {0} {1}", ea.RoutingKey, Encoding.UTF8.GetString(ea.Body)), Synapse.LogDebug);
+                    Synapse.Log(string.Format("Event Receive: {0}@{1} {2}", ea.BasicProperties.Type, ea.BasicProperties.ReplyTo, Encoding.UTF8.GetString(ea.Body)), Synapse.LogDebug);
                 }
                 if (mAlias.ContainsKey(ea.RoutingKey))
                 {

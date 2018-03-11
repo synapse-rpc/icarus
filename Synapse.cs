@@ -11,20 +11,20 @@ namespace Icarus
         public string MqPort = "5672";
         public string MqUser;
         public string MqPass;
+        public string MqVHost = "/";
         public string SysName;
         public string AppName;
         public string AppId;
         public int RpcTimeout = 3;
         public int EventProcessNum = 20;
         public int RpcProcessNum = 20;
+        public int LoggerProcessNum = 20;
         public bool DisableEventClient;
         public bool DisableRpcClient;
         public bool Debug;
         public dynamic RpcCallback;
         public dynamic EventCallback;
-
-        public static string EventExchangeName = "event";
-        public static string RpcExchangeName = "rpc";
+        public dynamic LoggerCallback;
 
         public static string LogInfo = "Info";
         public static string LogDebug = "Debug";
@@ -70,6 +70,22 @@ namespace Icarus
             }
             mCreateConnection();
             mCheckAndCreateExchange();
+
+            //日志服务
+            if (LoggerCallback == null)
+            {
+                Log("Logger Disabled: LoggerCallback not set", LogWarn);
+            }
+            else
+            {
+                new Logger(this).Run();
+                Log(string.Format("Logger MaxProcessNum: {0}", LoggerProcessNum));
+                foreach (KeyValuePair<string, string> item in LoggerCallback.RegAlias())
+                {
+                    Log(string.Format("*LOG: {0} -> {1}", item.Key, item.Value));
+                }
+            }
+
             //事件服务器
             if (EventCallback == null)
             {
@@ -159,7 +175,7 @@ namespace Icarus
             var factory = new ConnectionFactory();
             factory.HostName = MqHost;
             factory.Port = Convert.ToInt16(MqPort);
-            factory.VirtualHost = SysName;
+            factory.VirtualHost = MqVHost;
             factory.UserName = MqUser;
             factory.Password = MqPass;
             try
@@ -200,10 +216,8 @@ namespace Icarus
             var channel = CreateChannel(0, "Exchange");
             try
             {
-                channel.ExchangeDeclare(EventExchangeName, ExchangeType.Topic, true, false, null);
-                Log("Register Event Exchange Successed.");
-                channel.ExchangeDeclare(RpcExchangeName, ExchangeType.Direct, true, false, null);
-                Log("Register RPC Exchange Successed.");
+                channel.ExchangeDeclare(SysName, ExchangeType.Topic, true, true, null);
+                Log("Register Exchange Successed.");
             }
             catch (ConnectFailureException e)
             {
