@@ -1,106 +1,254 @@
 ﻿using System;
 using RabbitMQ.Client;
-using System.Text;
 using RabbitMQ.Client.Exceptions;
+using System.Collections.Generic;
 
 namespace Icarus
 {
-    public class Synapse: Common
+    public class Synapse
     {
-        //启动 Synapse 组件, 开始监听RPC请求和事件
-		public void Serve(){
-            if (AppName == null || SysName == null){
-                Console.WriteLine("[Synapse Error] Must Set SysName and AppName system exit .");
+        public string MqHost;
+        public string MqPort = "5672";
+        public string MqUser;
+        public string MqPass;
+        public string SysName;
+        public string AppName;
+        public string AppId;
+        public int RpcTimeout = 3;
+        public int EventProcessNum = 20;
+        public int RpcProcessNum = 20;
+        public bool DisableEventClient;
+        public bool DisableRpcClient;
+        public bool Debug;
+        public dynamic RpcCallback;
+        public dynamic EventCallback;
+
+        public static string EventExchangeName = "event";
+        public static string RpcExchangeName = "rpc";
+
+        public static string LogInfo = "Info";
+        public static string LogDebug = "Debug";
+        public static string LogWarn = "Warn";
+        public static string LogError = "Error";
+
+
+        private IConnection mConn;
+
+        private EventClient mEventClient;
+        private RpcClient mRpcClient;
+
+        //启动 Synapse 组件
+        public void Serve()
+        {
+            //系统名称,应用名称
+            if (AppName == null || SysName == null)
+            {
+                Log("Must Set SysName and AppName system exit .", LogError);
                 return;
-            }else{
-                Console.WriteLine("[Synapse Info] System Name: {0}", SysName);
-                Console.WriteLine("[Synapse Info] App Name: {0}", AppName);
             }
-            if(ProcessNum == 0){
-                ProcessNum = 100;
+            else
+            {
+                Log(string.Format("System Name: {0}", SysName));
+                Log(string.Format("App Name: {0}", AppName));
             }
-            Console.WriteLine("[Synapse Info] App MaxProcessNum: {0}",ProcessNum);
-            if(AppId == null){
-                AppId = _randomString(20);
+
+            //应用ID
+            if (AppId == null)
+            {
+                AppId = RandomString();
             }
-            Console.WriteLine("[Synapse Info] App ID: {0}",AppId);
-            if(Debug){
-                Console.WriteLine("[Synapse Warn] App Run Mode: Debug");
-            }else{
-                Console.WriteLine("[Synapse Info] App Run Mode: Production");
+            Log(string.Format("App ID: {0}", AppId));
+
+            //调试模式
+            if (Debug)
+            {
+                Log("App Run Mode: Debug", LogDebug);
             }
-            goto START;
-        START:
-            _createConnection();
-            _createChannel();
-            _checkAndCreateExchange();
+            else
+            {
+                Log("App Run Mode: Production");
+            }
+            mCreateConnection();
+            mCheckAndCreateExchange();
+            //事件服务器
+            if (EventCallback == null)
+            {
+                Log("Event Server Disabled: EventCallback not set", LogWarn);
+            }
+            else
+            {
+                new EventServer(this).Run();
+                Log(string.Format("Event Server MaxProcessNum: {0}", EventProcessNum));
+                foreach (KeyValuePair<string, string> item in EventCallback.RegAlias())
+                {
+                    Log(string.Format("*EVT: {0} -> {1}", item.Key, item.Value));
+                }
+            }
+
+            //RPC服务器
+            if (RpcCallback == null)
+            {
+                Log("Rpc Server Disabled: RpcCallback not set", LogWarn);
+            }
+            else
+            {
+                new RpcServer(this).Run();
+                Log(string.Format("Rpc Server MaxProcessNum: {0}", RpcProcessNum));
+                foreach (KeyValuePair<string, string> item in RpcCallback.RegAlias())
+                {
+                    Log(string.Format("*RPC: {0} -> {1}", item.Key, item.Value));
+                }
+            }
+
+            //事件客户端
+            if (DisableEventClient)
+            {
+                Log("Event Client Disabled: DisableEventClient set true", LogWarn);
+            }
+            else
+            {
+                mEventClient = new EventClient(this);
+                Log("Event Client Ready");
+            }
+
+            //RPC客户端
+            if (DisableRpcClient)
+            {
+                Log("Rpc Client Disabled: DisableEventClient set true", LogWarn);
+            }
+            else
+            {
+                mRpcClient = new RpcClient(this);
+                mRpcClient.Run();
+                Log(string.Format("Rpc Client Timeout: {0}s", RpcTimeout));
+                Log("Rpc Client Ready");
+            }
         }
 
-		//生成随机字符串
-		private string _randomString(int codeCount)
-		{
-            int rep = 0;
-			string str = string.Empty;
-			long num2 = DateTime.Now.Ticks + rep;
-			rep++;
-			Random random = new Random(((int)(((ulong)num2) & 0xffffffffL)) | ((int)(num2 >> rep)));
-			for (int i = 0; i < codeCount; i++)
-			{
-				char ch;
-				int num = random.Next();
-				if ((num % 2) == 0)
-				{
-					ch = (char)(0x30 + ((ushort)(num % 10)));
-				}
-				else
-				{
-					ch = (char)(0x41 + ((ushort)(num % 0x1a)));
-				}
-				str = str + ch.ToString();
-			}
-			return str;
-		}
+        //发送事件
+        public void SendEvent(string eventName, Dictionary<string, object> param)
+        {
+            if (DisableEventClient)
+            {
+                Log("Event Client Disabled!", LogWarn);
+            }
+            else
+            {
+                mEventClient.Send(eventName, param);
+            }
+        }
+
+        //发送RPC请求
+        public dynamic SendRpc(string server, string method, Dictionary<string, object> param)
+        {
+            if (DisableRpcClient)
+            {
+                Log("Rpc Client Disabled!", LogWarn);
+                return new Dictionary<string, object>() { { "rpc_error", "Rpc Client Disabled" } }; ;
+            }
+            else
+            {
+                return mRpcClient.Send(server, method, param);
+            }
+        }
+
 
         //连接RabbitMQ服务器
-        private void _createConnection(){
+        private void mCreateConnection()
+        {
             var factory = new ConnectionFactory();
             factory.HostName = MqHost;
             factory.Port = Convert.ToInt16(MqPort);
+            factory.VirtualHost = SysName;
             factory.UserName = MqUser;
             factory.Password = MqPass;
             try
             {
-                conn = factory.CreateConnection();
-                Console.WriteLine("[Synapse Info] Rabbit MQ Connection Created.");
+                mConn = factory.CreateConnection();
+                Log("Rabbit MQ Connection Created.");
             }
             catch (BrokerUnreachableException e)
             {
-                Console.WriteLine("[Synapse Error] Failed to connect to RabbitMQ.\n {0}",e);
+                Log(string.Format("Failed to connect to RabbitMQ.\n {0}", e));
             }
 
         }
 
         //创建 RabbitMQ 通道
-        private void _createChannel() {
+        public IModel CreateChannel(int processNum = 0, string desc = "unknow")
+        {
+            IModel channel = null;
             try
             {
-                channel = conn.CreateModel();
-                channel.BasicQos(0, Convert.ToUInt16(ProcessNum), false);
-                Console.WriteLine("[Synapse Info] Rabbit MQ Channel Created.");
-            }catch(ConnectFailureException e){
-                Console.WriteLine("[Synapse Error] Failed to open a channel.\n {0}", e);
+                channel = mConn.CreateModel();
+                if (processNum != 0)
+                {
+                    channel.BasicQos(0, Convert.ToUInt16(processNum), false);
+                }
+                Log(string.Format("{0} Channel Created", desc));
             }
+            catch (ConnectFailureException e)
+            {
+                Log(string.Format("Failed to open a channel.\n {0}", e), LogError);
+            }
+            return channel;
         }
 
-        //创建 事件监听
-        private void _checkAndCreateExchange(){
+        //创建交换机
+        private void mCheckAndCreateExchange()
+        {
+            var channel = CreateChannel(0, "Exchange");
             try
             {
-                channel.ExchangeDeclare(SysName, "topic", true, false, null);
-                Console.WriteLine("[Synapse Info] RegistermEvent Exchange Successed.");
-            }catch(ConnectFailureException e){
-                Console.WriteLine("[Synapse Error] Failed to declare Event Exchange.\n {0}", e);
+                channel.ExchangeDeclare(EventExchangeName, ExchangeType.Topic, true, false, null);
+                Log("Register Event Exchange Successed.");
+                channel.ExchangeDeclare(RpcExchangeName, ExchangeType.Direct, true, false, null);
+                Log("Register RPC Exchange Successed.");
             }
+            catch (ConnectFailureException e)
+            {
+                Log(string.Format("Failed to declare Exchange.\n {0}", e), LogError);
+            }
+            channel.Close();
+            Log("Exchange Channel Closed");
         }
-	}
+
+        //生成随机字符串
+        public static string RandomString(int codeCount = 20)
+        {
+            int rep = 0;
+            string str = string.Empty;
+            long num2 = DateTime.Now.Ticks + rep;
+            rep++;
+            Random random = new Random(((int)(((ulong)num2) & 0xffffffffL)) | ((int)(num2 >> rep)));
+            for (int i = 0; i < codeCount; i++)
+            {
+                char ch;
+                int num = random.Next();
+                if ((num % 2) == 0)
+                {
+                    ch = (char)(0x30 + ((ushort)(num % 10)));
+                }
+                else
+                {
+                    ch = (char)(0x41 + ((ushort)(num % 0x1a)));
+                }
+                str = str + ch.ToString();
+            }
+            return str;
+        }
+
+        //生成时间戳
+        public static Int32 GetTimeStamp()
+        {
+            TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            return Convert.ToInt32(ts.TotalSeconds);
+        }
+
+        public static void Log(string desc, string type = "Info")
+        {
+            string time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            Console.WriteLine("[{0}][Synapse {1}] {2}", time, type, desc);
+        }
+    }
 }

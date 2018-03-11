@@ -1,19 +1,85 @@
 ﻿using System;
+using System.Text;
+using System.Collections.Generic;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using Newtonsoft.Json;
 namespace Icarus
 {
-    public class RpcClient:Common
+    public class RpcClient
     {
-		private string queue_name = SysName + "_rpc_cli_" + AppName + "_" + AppId;
-		private string router = "rpc.cli." + AppName + "." + AppId;
-        protected void rpcCallbackQueue(){
-			var queue = channel.QueueDeclare(queue_name, true, true, true, null);
-            channel.QueueBind(queue.QueueName,SysName,router,null);
+        private Synapse mSynapse;
+        private IModel mChannel;
+        private string mQueueName;
+        private string mRouter;
+        private Dictionary<string, byte[]> mResponseCache;
+
+        public RpcClient(Synapse synapse)
+        {
+            mSynapse = synapse;
+            mChannel = mSynapse.CreateChannel(0, "RpcClient");
+            mQueueName = "client_" + mSynapse.AppName + "_" + mSynapse.AppId;
+            mRouter = "client." + mSynapse.AppName + "." + mSynapse.AppId;
+            mResponseCache = new Dictionary<string, byte[]>();
         }
 
-        protected void rpcCallbackQueueListen(){
-            //    channel.BasicConsume(queue_name);
-            return;
+        private void mCheckAndCreateQueue()
+        {
+            mChannel.QueueDeclare(mQueueName, false, false, true, null);
+            mChannel.QueueBind(mQueueName, Synapse.RpcExchangeName, mRouter, null);
+        }
+
+        public void Run()
+        {
+            mCheckAndCreateQueue();
+            EventingBasicConsumer consumer = new EventingBasicConsumer(mChannel);
+            consumer.Received += (ch, ea) =>
+            {
+                mResponseCache.Add(ea.BasicProperties.CorrelationId, ea.Body);
+                mChannel.BasicAck(ea.DeliveryTag, false);
+                if (mSynapse.Debug)
+                {
+                    Synapse.Log(string.Format("RPC Response: ({0}){1}@{2}->{3} {4}", ea.BasicProperties.CorrelationId, ea.BasicProperties.Type, ea.BasicProperties.ReplyTo, mSynapse.AppName, Encoding.UTF8.GetString(ea.Body)), Synapse.LogDebug);
+                }
+            };
+            mChannel.BasicConsume(mQueueName, false, consumer);
+        }
+
+        public object Send(string app, string action, Dictionary<string, object> param)
+        {
+            var paramJson = JsonConvert.SerializeObject(param);
+            var router = "server." + app;
+            dynamic response;
+            var props = mChannel.CreateBasicProperties();
+            props.AppId = mSynapse.AppId;
+            props.MessageId = Synapse.RandomString();
+            props.Type = action;
+            props.ReplyTo = mSynapse.AppName;
+            mChannel.BasicPublish(Synapse.RpcExchangeName, router, props, Encoding.UTF8.GetBytes(paramJson));
+            if (mSynapse.Debug)
+            {
+                Synapse.Log(string.Format("RPC Request: ({0}){4}->{1}@{2} {3}", props.MessageId, action, app, paramJson, mSynapse.AppName), Synapse.LogDebug);
+            }
+            var ts = Synapse.GetTimeStamp();
+            while (true)
+            {
+                if (Synapse.GetTimeStamp() - ts > mSynapse.RpcTimeout)
+                {
+                    response = new Dictionary<string, object>() { { "rpc_error", "Timeout" } };
+                    break;
+                }
+                if (mResponseCache.ContainsKey(props.MessageId))
+                {
+                    response = JsonConvert.DeserializeObject<dynamic>(Encoding.UTF8.GetString(mResponseCache[props.MessageId]));
+                    mResponseCache.Remove(props.MessageId);
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return response;
         }
     }
 }
