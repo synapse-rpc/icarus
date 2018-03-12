@@ -2,6 +2,9 @@
 
 ### 此为系统核心交互组件,包含了事件和RPC系统
 
+#### 包地址
+> https://www.nuget.org/packages/Icarus/1.4.1
+
 #### 可以使用Nuget安装
 > Install-Package Icarus
 
