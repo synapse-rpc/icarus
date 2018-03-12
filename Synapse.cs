@@ -22,9 +22,9 @@ namespace Icarus
         public bool DisableEventClient;
         public bool DisableRpcClient;
         public bool Debug;
-        public dynamic RpcCallback;
-        public dynamic EventCallback;
-        public dynamic LoggerCallback;
+        public BaseCallback RpcCallback;
+        public BaseCallback EventCallback;
+        public BaseLogger LoggerCallback;
 
         public static string LogInfo = "Info";
         public static string LogDebug = "Debug";
@@ -78,12 +78,8 @@ namespace Icarus
             }
             else
             {
-                new Logger(this).Run();
+                new LoggerServer(this).Run();
                 Log(string.Format("Logger MaxProcessNum: {0}", LoggerProcessNum));
-                foreach (KeyValuePair<string, string> item in LoggerCallback.RegAlias())
-                {
-                    Log(string.Format("*LOG: {0} -> {1}", item.Key, item.Value));
-                }
             }
 
             //事件服务器
@@ -259,6 +255,7 @@ namespace Icarus
             return Convert.ToInt32(ts.TotalSeconds);
         }
 
+        //控制台日志
         public static void Log(string desc, string type = "Info")
         {
             string time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");

@@ -25,38 +25,43 @@
 
 #### CallBack类说明:
 callback类中需要有一个 public Dictionary<string, string> RegAlias() 方法,返回一个请求对应的字典,对于RPC来说为调用名和执行方法名的关联,对于EVENT来说,为监听事件和执行方法名的对应;
+所有的Callback均需要继承BaseCallback类
 ```C#
-//两种回调必须有的注册方法
-public Dictionary<string, string> RegAlias()
+public class BaseCallback
 {
-    return new Dictionary<string, string>(){
-        {"dotNet.test","tb"}
-    };
-}
-
-//事件回调方法
-public bool tb(dynamic data)
-{
-    Console.WriteLine("我已经收到信息: {0}", data.msg);
-    return true;
-}
-
-//RPC回调方法
-public Dictionary<string, object> tb(dynamic data)
-{
-    var ret = new Dictionary<string, object>();
-    ret.Add("suceess", "I 收到了");
-    ret.Add("m", data.msg);
-    ret.Add("number", 5233);
-    return ret;
-}
-
-//日志处理方法
-public void tb(BasicDeliverEventArgs data)
-{
-    Console.WriteLine("我已经收到信息: {0}", data.RoutingKey);
+    public virtual Dictionary<string, string> RegAlias()
+    {
+        return new Dictionary<string, string>() { };
+    }
 }
 ```
+#### 日志说明:
+LoggerServer实现了全局日志功能,回调需要继承 BaseLogger
+```C#
+public class BaseLogger
+{
+    //记录所有日志
+    public virtual void All(BasicDeliverEventArgs data)
+    {
+    }
+
+    //记录事件日志
+    public virtual void Event(BasicDeliverEventArgs data)
+    {
+    }
+
+    //记录请求日志
+    public virtual void Request(BasicDeliverEventArgs data)
+    {
+    }
+
+    //记录响应日志
+    public virtual void Response(BasicDeliverEventArgs data)
+    {
+    }
+}
+```
+
 #### 客户端方法说明:
 1. 发送事件
 > Synapse.SendEvent(string eventName, Dictionary<string, object> param)
@@ -64,7 +69,7 @@ public void tb(BasicDeliverEventArgs data)
 2. RPC请求
 > Synapse.SendRpc(string server, string method, Dictionary<string, object> param)
 
-3. 日志记录方法
+3. 控制台日志
 > Synapse.Log(string desc, string type = "Info")
 
 日志级别: LogWarn,LogError,LogInfo,LogDebug
@@ -86,7 +91,7 @@ public int RpcProcessNum = 20;      //RPC服务并发量
 public bool DisableEventClient;     //禁用事件客户端
 public bool DisableRpcClient;       //禁用RPC客户端
 public bool Debug;                  //调试
-public dynamic RpcCallback;         //RPC处理类(不指定默认禁用)
-public dynamic EventCallback;       //Event处理类(不指定默认禁用)
-public dynamic LoggerCallback;      //日志处理类(不指定默认禁用)
+public BaseCallback RpcCallback;    //RPC处理类(不指定默认禁用)
+public BaseCallback EventCallback;  //Event处理类(不指定默认禁用)
+public BaseLogger LoggerCallback;   //日志处理类(不指定默认禁用)
 ```
