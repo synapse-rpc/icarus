@@ -26,6 +26,7 @@
 #### CallBack类说明:
 callback类中需要有一个 public Dictionary<string, string> RegAlias() 方法,返回一个请求对应的字典,对于RPC来说为调用名和执行方法名的关联,对于EVENT来说,为监听事件和执行方法名的对应;
 所有的Callback均需要继承BaseCallback类
+注意: 不支持#和*通配符
 ```C#
 public class BaseCallback
 {
