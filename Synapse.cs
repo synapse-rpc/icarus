@@ -79,7 +79,6 @@ namespace Icarus
             else
             {
                 new LoggerServer(this).Run();
-                Log(string.Format("Logger MaxProcessNum: {0}", LoggerProcessNum));
             }
 
             //事件服务器
@@ -90,7 +89,6 @@ namespace Icarus
             else
             {
                 new EventServer(this).Run();
-                Log(string.Format("Event Server MaxProcessNum: {0}", EventProcessNum));
                 foreach (KeyValuePair<string, string> item in EventCallback.RegAlias())
                 {
                     Log(string.Format("*EVT: {0} -> {1}", item.Key, item.Value));
@@ -105,7 +103,6 @@ namespace Icarus
             else
             {
                 new RpcServer(this).Run();
-                Log(string.Format("Rpc Server MaxProcessNum: {0}", RpcProcessNum));
                 foreach (KeyValuePair<string, string> item in RpcCallback.RegAlias())
                 {
                     Log(string.Format("*RPC: {0} -> {1}", item.Key, item.Value));
@@ -115,7 +112,7 @@ namespace Icarus
             //事件客户端
             if (DisableEventClient)
             {
-                Log("Event Client Disabled: DisableEventClient set true", LogWarn);
+                Log("Event Client Disabled: DisableEventClient set true", LogError);
             }
             else
             {
@@ -126,7 +123,7 @@ namespace Icarus
             //RPC客户端
             if (DisableRpcClient)
             {
-                Log("Rpc Client Disabled: DisableEventClient set true", LogWarn);
+                Log("Rpc Client Disabled: DisableEventClient set true", LogError);
             }
             else
             {
@@ -156,7 +153,7 @@ namespace Icarus
             if (DisableRpcClient)
             {
                 Log("Rpc Client Disabled!", LogWarn);
-                return new Dictionary<string, object>() { { "rpc_error", "Rpc Client Disabled" } }; ;
+                return new Dictionary<string, object>() { { "rpc_error", "rpc client disabled" } }; ;
             }
             else
             {
@@ -193,11 +190,12 @@ namespace Icarus
             try
             {
                 channel = mConn.CreateModel();
+                Log(string.Format("{0} Channel Created", desc));
                 if (processNum != 0)
                 {
                     channel.BasicQos(0, Convert.ToUInt16(processNum), false);
+                    Log(string.Format("{1} MaxProcessNum: {0}", RpcProcessNum, desc));
                 }
-                Log(string.Format("{0} Channel Created", desc));
             }
             catch (ConnectFailureException e)
             {

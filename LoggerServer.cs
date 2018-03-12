@@ -13,7 +13,7 @@ namespace Icarus
         {
             mSynapse = synapse;
             mChannel = mSynapse.CreateChannel(mSynapse.LoggerProcessNum, "Logger");
-            mQueueName = string.Format("{0}_logger_{1}", mSynapse.SysName, mSynapse.AppName);
+            mQueueName = string.Format("{0}_{1}_logger", mSynapse.SysName, mSynapse.AppName);
         }
 
         private void mCheckAndCreateQueue()

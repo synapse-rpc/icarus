@@ -19,7 +19,7 @@ namespace Icarus
         {
             mSynapse = synapse;
             mChannel = mSynapse.CreateChannel(mSynapse.EventProcessNum, "EventServer");
-            mQueueName = string.Format("{0}_event_{1}", mSynapse.SysName, mSynapse.AppName);
+            mQueueName = string.Format("{0}_{1}_event", mSynapse.SysName, mSynapse.AppName);
             mAlias = mSynapse.EventCallback.RegAlias();
         }
 

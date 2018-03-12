@@ -17,7 +17,7 @@ namespace Icarus
         {
             mSynapse = synapse;
             mChannel = mSynapse.CreateChannel(0, "RpcClient");
-            mQueueName = string.Format("{0}_client_{1}_{2}", mSynapse.SysName, mSynapse.AppName, mSynapse.AppId);
+            mQueueName = string.Format("{0}_{1}_client_{2}", mSynapse.SysName, mSynapse.AppName, mSynapse.AppId);
             mRouter = string.Format("client.{0}.{1}", mSynapse.AppName, mSynapse.AppId);
             mResponseCache = new Dictionary<string, byte[]>();
         }
@@ -64,7 +64,7 @@ namespace Icarus
             {
                 if (Synapse.GetTimeStamp() - ts > mSynapse.RpcTimeout)
                 {
-                    response = new Dictionary<string, object>() { { "rpc_error", "Timeout" } };
+                    response = new Dictionary<string, object>() { { "rpc_error", "timeout" } };
                     break;
                 }
                 if (mResponseCache.ContainsKey(props.MessageId))

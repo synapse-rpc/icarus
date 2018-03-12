@@ -4,10 +4,16 @@
     <TargetFramework>netstandard1.6</TargetFramework>
     <SynchReleaseVersion>false</SynchReleaseVersion>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>1.2.2</PackageVersion>
+    <PackageVersion>1.4.1</PackageVersion>
     <Authors>xRain</Authors>
     <PackageId>Icarus</PackageId>
     <Description>Synapse Rpc System Base RabbitMQ</Description>
+    <NeutralLanguage>zh-CN</NeutralLanguage>
+    <Owners>xrain0610</Owners>
+    <PackageProjectUrl>https://github.com/synapse-rpc</PackageProjectUrl>
+    <Summary>A rpc framework base RabbitMQ (已实现C#,python,Golang)</Summary>
+    <Title>Synapse RabbitMQ RPC</Title>
+    <PackageTags>json rpc synapse rabbitmq</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
