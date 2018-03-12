@@ -60,7 +60,10 @@ namespace Icarus
                         props.Type = ea.BasicProperties.Type;
                         var returnJson = JsonConvert.SerializeObject(res);
                         mChannel.BasicPublish(mSynapse.SysName, reply, false, props, Encoding.UTF8.GetBytes(returnJson));
-                        Synapse.Log(string.Format("Rpc Return: ({0}){1}@{2}->{3} {4}", ea.BasicProperties.MessageId, ea.BasicProperties.Type, mSynapse.AppName, ea.BasicProperties.ReplyTo, returnJson), Synapse.LogDebug);
+                        if (mSynapse.Debug)
+                        {
+                            Synapse.Log(string.Format("Rpc Return: ({0}){1}@{2}->{3} {4}", ea.BasicProperties.MessageId, ea.BasicProperties.Type, mSynapse.AppName, ea.BasicProperties.ReplyTo, returnJson), Synapse.LogDebug);
+                        }
                     }
                 }
             };
