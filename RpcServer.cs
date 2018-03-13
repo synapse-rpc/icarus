@@ -27,7 +27,6 @@ namespace Icarus
         private void mCheckAndCreateQueue()
         {
             mChannel.QueueDeclare(mQueueName, true, false, true, null);
-            var eventKeys = mAlias.Keys;
             mChannel.QueueBind(mQueueName, mSynapse.SysName, mRouter, null);
         }
 
