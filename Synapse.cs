@@ -139,7 +139,7 @@ namespace Icarus
         {
             if (DisableEventClient)
             {
-                Log("Event Client Disabled!", LogWarn);
+                Log("Event Client Disabled!", LogError);
             }
             else
             {
@@ -152,7 +152,7 @@ namespace Icarus
         {
             if (DisableRpcClient)
             {
-                Log("Rpc Client Disabled!", LogWarn);
+                Log("Rpc Client Disabled!", LogError);
                 return new Dictionary<string, object>() { { "rpc_error", "rpc client disabled" } }; ;
             }
             else
