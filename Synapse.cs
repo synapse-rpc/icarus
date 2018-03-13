@@ -194,7 +194,7 @@ namespace Icarus
                 if (processNum != 0)
                 {
                     channel.BasicQos(0, Convert.ToUInt16(processNum), false);
-                    Log(string.Format("{1} MaxProcessNum: {0}", RpcProcessNum, desc));
+                    Log(string.Format("{1} MaxProcessNum: {0}", processNum, desc));
                 }
             }
             catch (ConnectFailureException e)
