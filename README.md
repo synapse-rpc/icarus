@@ -39,7 +39,7 @@ public class BaseCallback
     }
 }
 ```
-RPC和事件回调方法类型:
+RPC回调方法类型:
 ```C#
 // data 为json反序列化后的对象
 // ea 是mq接收到的原始数据
@@ -50,6 +50,17 @@ public Dictionary<string, object> tb(dynamic data, BasicDeliverEventArgs ea)
     ret.Add("m", data.msg);
     ret.Add("number", 5233);
     return ret;
+}
+```
+
+事件回调方法类型:
+```C#
+// data 为json反序列化后的对象
+// ea 是mq接收到的原始数据
+// 返回true系统将会应答消息,返回false系统将重新将消息放入队列
+public bool tb(dynamic data, BasicDeliverEventArgs ea)
+{
+    return true;
 }
 ```
 #### 日志说明:
