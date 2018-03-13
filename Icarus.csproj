@@ -4,7 +4,7 @@
     <TargetFramework>netstandard1.6</TargetFramework>
     <SynchReleaseVersion>false</SynchReleaseVersion>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>1.4.1</PackageVersion>
+    <PackageVersion>1.4.2</PackageVersion>
     <Authors>xRain</Authors>
     <PackageId>Icarus</PackageId>
     <Description>Synapse Rpc System Base RabbitMQ</Description>

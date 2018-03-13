@@ -47,7 +47,7 @@ namespace Icarus
                     if (mt != null)
                     {
                         var paramObj = JsonConvert.DeserializeObject<dynamic>(Encoding.UTF8.GetString(ea.Body));
-                        res = (Dictionary<string, object>)mt.Invoke(mSynapse.RpcCallback, new object[] { paramObj });
+                        res = (Dictionary<string, object>)mt.Invoke(mSynapse.RpcCallback, new object[] { paramObj, ea });
                     }
                 }
                 var reply = string.Format("client.{0}.{1}", ea.BasicProperties.ReplyTo, ea.BasicProperties.AppId);

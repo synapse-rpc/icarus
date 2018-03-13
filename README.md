@@ -39,6 +39,19 @@ public class BaseCallback
     }
 }
 ```
+RPC和事件回调方法类型:
+```C#
+// data 为json反序列化后的对象
+// ea 是mq接收到的原始数据
+public Dictionary<string, object> tb(dynamic data, BasicDeliverEventArgs ea)
+{
+    var ret = new Dictionary<string, object>();
+    ret.Add("suceess", "I 收到了");
+    ret.Add("m", data.msg);
+    ret.Add("number", 5233);
+    return ret;
+}
+```
 #### 日志说明:
 LoggerServer实现了全局日志功能,回调需要继承 BaseLogger
 ```C#

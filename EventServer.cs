@@ -58,7 +58,7 @@ namespace Icarus
                     else
                     {
                         var paramObj = JsonConvert.DeserializeObject<dynamic>(Encoding.UTF8.GetString(ea.Body));
-                        var res = (bool)mt.Invoke(mSynapse.EventCallback, new object[] { paramObj });
+                        var res = (bool)mt.Invoke(mSynapse.EventCallback, new object[] { paramObj, ea });
                         if (res)
                         {
                             mChannel.BasicAck(ea.DeliveryTag, false);
