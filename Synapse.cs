@@ -112,7 +112,7 @@ namespace Icarus
             //事件客户端
             if (DisableEventClient)
             {
-                Log("Event Client Disabled: DisableEventClient set true", LogError);
+                Log("Event Client Disabled: DisableEventClient set true", LogWarn);
             }
             else
             {
@@ -123,7 +123,7 @@ namespace Icarus
             //RPC客户端
             if (DisableRpcClient)
             {
-                Log("Rpc Client Disabled: DisableEventClient set true", LogError);
+                Log("Rpc Client Disabled: DisableEventClient set true", LogWarn);
             }
             else
             {
