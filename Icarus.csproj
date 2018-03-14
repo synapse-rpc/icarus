@@ -3,10 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <SynchReleaseVersion>false</SynchReleaseVersion>
-    <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>1.4.2</PackageVersion>
+    <PackageVersion>1.4.3</PackageVersion>
     <Authors>xRain</Authors>
-    <PackageId>Icarus</PackageId>
+    <PackageId>Rpc.Synpase.Icarus</PackageId>
     <Description>Synapse Rpc System Base RabbitMQ</Description>
     <NeutralLanguage>zh-CN</NeutralLanguage>
     <Owners>xrain0610</Owners>

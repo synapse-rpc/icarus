@@ -4,7 +4,7 @@ using RabbitMQ.Client.Exceptions;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace Icarus
+namespace Rpc.Synapse.Icarus
 {
     public class Synapse
     {

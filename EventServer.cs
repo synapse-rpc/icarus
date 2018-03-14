@@ -3,11 +3,10 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using System;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 
-namespace Icarus
+namespace Rpc.Synapse.Icarus
 {
     public class EventServer
     {

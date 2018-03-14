@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-namespace Icarus
+﻿using System.Collections.Generic;
+namespace Rpc.Synapse.Icarus
 {
     public class BaseCallback
     {

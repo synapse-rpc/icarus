@@ -1,10 +1,9 @@
 ﻿using System.Text;
-using System.Collections.Generic;
 using RabbitMQ.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Icarus
+namespace Rpc.Synapse.Icarus
 {
     public class EventClient
     {

@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Newtonsoft.Json;
-using System;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
-namespace Icarus
+namespace Rpc.Synapse.Icarus
 {
     public class RpcServer
     {

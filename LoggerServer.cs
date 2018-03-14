@@ -3,7 +3,7 @@ using RabbitMQ.Client.Events;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-namespace Icarus
+namespace Rpc.Synapse.Icarus
 {
     public class LoggerServer
     {

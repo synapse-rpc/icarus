@@ -3,10 +3,10 @@
 ### 此为系统核心交互组件,包含了事件和RPC系统
 
 #### 包地址
-> https://www.nuget.org/packages/Icarus
+> https://www.nuget.org/packages/Rpc.Synpase.Icarus
 
 #### 可以使用Nuget安装
-> Install-Package Icarus
+> Install-Package Rpc.Synapse.Icarus
 
 #### 使用前奏:
 1. 需要一个RabbitMQ服务器
