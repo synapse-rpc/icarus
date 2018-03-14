@@ -3,7 +3,7 @@
 ### 此为系统核心交互组件,包含了事件和RPC系统
 
 #### 包地址
-> https://www.nuget.org/packages/Icarus/1.4.1
+> https://www.nuget.org/packages/Icarus
 
 #### 可以使用Nuget安装
 > Install-Package Icarus
@@ -43,7 +43,7 @@ RPC回调方法类型:
 ```C#
 // data 为json反序列化后的对象
 // ea 是mq接收到的原始数据
-public Dictionary<string, object> tb(dynamic data, BasicDeliverEventArgs ea)
+public JObject tb(JObject data, BasicDeliverEventArgs ea)
 {
     var ret = new Dictionary<string, object>();
     ret.Add("suceess", "I 收到了");
@@ -58,7 +58,7 @@ public Dictionary<string, object> tb(dynamic data, BasicDeliverEventArgs ea)
 // data 为json反序列化后的对象
 // ea 是mq接收到的原始数据
 // 返回true系统将会应答消息,返回false系统将重新将消息放入队列
-public bool tb(dynamic data, BasicDeliverEventArgs ea)
+public bool tb(JObject data, BasicDeliverEventArgs ea)
 {
     return true;
 }
@@ -69,22 +69,22 @@ LoggerServer实现了全局日志功能,回调需要继承 BaseLogger
 public class BaseLogger
 {
     //记录所有日志
-    public virtual void All(BasicDeliverEventArgs data)
+    public virtual void All(JObject data, BasicDeliverEventArgs ea)
     {
     }
 
     //记录事件日志
-    public virtual void Event(BasicDeliverEventArgs data)
+    public virtual void Event(JObject data, BasicDeliverEventArgs ea)
     {
     }
 
     //记录请求日志
-    public virtual void Request(BasicDeliverEventArgs data)
+    public virtual void Request(JObject data, BasicDeliverEventArgs ea)
     {
     }
 
     //记录响应日志
-    public virtual void Response(BasicDeliverEventArgs data)
+    public virtual void Response(JObject data, BasicDeliverEventArgs ea)
     {
     }
 }
@@ -92,10 +92,10 @@ public class BaseLogger
 
 #### 客户端方法说明:
 1. 发送事件
-> Synapse.SendEvent(string eventName, Dictionary<string, object> param)
+> Synapse.SendEvent(string eventName, JObject param)
 
 2. RPC请求
-> Synapse.SendRpc(string server, string method, Dictionary<string, object> param)
+> Synapse.SendRpc(string server, string method, JObject param)
 
 3. 控制台日志
 > Synapse.Log(string desc, string type = "Info")

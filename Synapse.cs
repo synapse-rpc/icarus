@@ -2,6 +2,7 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace Icarus
 {
@@ -135,7 +136,7 @@ namespace Icarus
         }
 
         //发送事件
-        public void SendEvent(string eventName, Dictionary<string, object> param)
+        public void SendEvent(string eventName, JObject param)
         {
             if (DisableEventClient)
             {
@@ -148,17 +149,19 @@ namespace Icarus
         }
 
         //发送RPC请求
-        public dynamic SendRpc(string server, string method, Dictionary<string, object> param)
+        public JObject SendRpc(string server, string method, JObject param)
         {
+            var res = new JObject();
             if (DisableRpcClient)
             {
                 Log("Rpc Client Disabled!", LogError);
-                return new Dictionary<string, object>() { { "rpc_error", "rpc client disabled" } }; ;
+                res.Add("rpc_error", "rpc client disabled");
             }
             else
             {
-                return mRpcClient.Send(server, method, param);
+                res = mRpcClient.Send(server, method, param);
             }
+            return res;
         }
 
 

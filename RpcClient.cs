@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Icarus
 {
     public class RpcClient
@@ -44,11 +46,11 @@ namespace Icarus
             mChannel.BasicConsume(mQueueName, false, consumer);
         }
 
-        public object Send(string app, string action, Dictionary<string, object> param)
+        public JObject Send(string app, string action, JObject param)
         {
             var paramJson = JsonConvert.SerializeObject(param);
             var router = string.Format("server.{0}", app);
-            dynamic response;
+            JObject response;
             var props = mChannel.CreateBasicProperties();
             props.AppId = mSynapse.AppId;
             props.MessageId = Synapse.RandomString();
@@ -64,12 +66,13 @@ namespace Icarus
             {
                 if (Synapse.GetTimeStamp() - ts > mSynapse.RpcTimeout)
                 {
-                    response = new Dictionary<string, object>() { { "rpc_error", "timeout" } };
+                    response = new JObject();
+                    response.Add("rpc_error", "timeout");
                     break;
                 }
                 if (mResponseCache.ContainsKey(props.MessageId))
                 {
-                    response = JsonConvert.DeserializeObject<dynamic>(Encoding.UTF8.GetString(mResponseCache[props.MessageId]));
+                    response = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(mResponseCache[props.MessageId]));
                     mResponseCache.Remove(props.MessageId);
                     break;
                 }

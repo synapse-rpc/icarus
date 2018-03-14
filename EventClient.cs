@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RabbitMQ.Client;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Icarus
 {
@@ -16,7 +17,7 @@ namespace Icarus
             mChannel = mSynapse.CreateChannel(0, "EventClient");
         }
 
-        public void Send(string eventName, Dictionary<string, object> param)
+        public void Send(string eventName, JObject param)
         {
             var paramJson = JsonConvert.SerializeObject(param);
             var router = string.Format("event.{0}.{1}", mSynapse.AppName, eventName);

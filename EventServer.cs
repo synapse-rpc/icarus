@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace Icarus
 {
@@ -57,7 +58,7 @@ namespace Icarus
                     }
                     else
                     {
-                        var paramObj = JsonConvert.DeserializeObject<dynamic>(Encoding.UTF8.GetString(ea.Body));
+                        var paramObj = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ea.Body));
                         var res = (bool)mt.Invoke(mSynapse.EventCallback, new object[] { paramObj, ea });
                         if (res)
                         {

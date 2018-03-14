@@ -1,6 +1,8 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 namespace Icarus
 {
     public class LoggerServer
@@ -33,19 +35,20 @@ namespace Icarus
                     Synapse.Log(string.Format("Logger Receive: {0} {1}", ea.RoutingKey, Encoding.UTF8.GetString(ea.Body)), Synapse.LogDebug);
                 }
                 var type = ea.RoutingKey.Split('.')[0];
+                var paramObj = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ea.Body));
                 switch (type)
                 {
                     case "event":
-                        mSynapse.LoggerCallback.Event(ea);
+                        mSynapse.LoggerCallback.Event(paramObj, ea);
                         break;
                     case "server":
-                        mSynapse.LoggerCallback.Request(ea);
+                        mSynapse.LoggerCallback.Request(paramObj, ea);
                         break;
                     case "client":
-                        mSynapse.LoggerCallback.Response(ea);
+                        mSynapse.LoggerCallback.Response(paramObj, ea);
                         break;
                 }
-                mSynapse.LoggerCallback.All(ea);
+                mSynapse.LoggerCallback.All(paramObj, ea);
             };
             mChannel.BasicConsume(mQueueName, true, consumer);
         }

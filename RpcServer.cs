@@ -5,6 +5,7 @@ using RabbitMQ.Client.Events;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 namespace Icarus
 {
     public class RpcServer
@@ -40,14 +41,15 @@ namespace Icarus
                 {
                     Synapse.Log(string.Format("RPC Receive: ({2}){0}->{1}@{4} {3}", ea.BasicProperties.ReplyTo, ea.BasicProperties.Type, ea.BasicProperties.MessageId, Encoding.UTF8.GetString(ea.Body), mSynapse.AppName), Synapse.LogDebug);
                 }
-                var res = new Dictionary<string, object>() { { "rpc_error", "method not found" } };
+                var res = new JObject();
+                res.Add("rpc_error", "method not found");
                 if (mAlias.ContainsKey(ea.BasicProperties.Type))
                 {
                     var mt = mSynapse.RpcCallback.GetType().GetMethod(mAlias[ea.BasicProperties.Type]);
                     if (mt != null)
                     {
-                        var paramObj = JsonConvert.DeserializeObject<dynamic>(Encoding.UTF8.GetString(ea.Body));
-                        res = (Dictionary<string, object>)mt.Invoke(mSynapse.RpcCallback, new object[] { paramObj, ea });
+                        var paramObj = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ea.Body));
+                        res = (JObject)mt.Invoke(mSynapse.RpcCallback, new object[] { paramObj, ea });
                     }
                 }
                 var reply = string.Format("client.{0}.{1}", ea.BasicProperties.ReplyTo, ea.BasicProperties.AppId);
