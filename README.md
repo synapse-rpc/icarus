@@ -8,6 +8,9 @@
 #### 可以使用Nuget安装
 > Install-Package Rpc.Synapse.Icarus
 
+#### Demo 程序
+> https://github.com/synapse-rpc/dotnet-test
+
 #### 使用前奏:
 1. 需要一个RabbitMQ服务器
 
