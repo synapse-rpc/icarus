@@ -10,8 +10,8 @@
     <NeutralLanguage>zh-CN</NeutralLanguage>
     <Owners>xrain0610</Owners>
     <PackageProjectUrl>https://github.com/synapse-rpc</PackageProjectUrl>
-    <Summary>A rpc framework base RabbitMQ (已实现C#,python,Golang)</Summary>
-    <Title>Synapse RabbitMQ RPC</Title>
+    <Summary>A rpc framework base RabbitMQ</Summary>
+    <Title>Synapse RPC</Title>
     <PackageTags>json rpc synapse rabbitmq</PackageTags>
   </PropertyGroup>
 
